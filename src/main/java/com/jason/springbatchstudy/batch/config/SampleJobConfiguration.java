@@ -1,5 +1,6 @@
 package com.jason.springbatchstudy.batch.config;
 
+import com.jason.springbatchstudy.batch.ResourceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -13,9 +14,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Created by yusik on 2020/01/27.
  */
@@ -26,6 +24,7 @@ public class SampleJobConfiguration {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final ResourceService resourceService;
 
     private int indexOfReader = 0;
 
@@ -50,7 +49,7 @@ public class SampleJobConfiguration {
     @Bean
     public Step mainStep() {
         return stepBuilderFactory.get("mainStep")
-                .<Integer, String>chunk(3)
+                .<Integer, String>chunk(1000)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
@@ -59,13 +58,7 @@ public class SampleJobConfiguration {
 
     @Bean
     public ItemReader<Integer> reader() {
-        List<Integer> integers = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        return () -> {
-            if (++indexOfReader >= integers.size()) {
-                return null;
-            }
-            return integers.get(indexOfReader);
-        };
+        return resourceService::pollNumber;
     }
 
     @Bean
@@ -75,6 +68,11 @@ public class SampleJobConfiguration {
 
     @Bean
     public ItemWriter<String> writer() {
-        return items -> log.info("items: {}", items);
+        return items -> {
+            log.info("item size: {}", items.size());
+            log.info("items: {}", items);
+            log.info("Thread: {}", Thread.currentThread().toString());
+
+        };
     }
 }
