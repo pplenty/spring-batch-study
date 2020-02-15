@@ -2,6 +2,7 @@ package com.jason.springbatchstudy.batch;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -16,6 +17,8 @@ import java.util.stream.IntStream;
 @Service
 public class ResourceService implements InitializingBean {
 
+    private final Object pollSync = new Object();
+
     private List<Integer> integers = IntStream.range(0, 10000)
             .boxed()
             .collect(Collectors.toList());
@@ -23,7 +26,11 @@ public class ResourceService implements InitializingBean {
     private LinkedList<Integer> numbers;
 
     public Integer pollNumber() {
-        return numbers.poll();
+        Integer temp;
+        synchronized (pollSync) {
+            temp = numbers.poll();
+        }
+        return temp;
     }
 
     @Override

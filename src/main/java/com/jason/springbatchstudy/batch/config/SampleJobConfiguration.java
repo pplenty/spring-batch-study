@@ -13,6 +13,7 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 /**
  * Created by yusik on 2020/01/27.
@@ -25,8 +26,6 @@ public class SampleJobConfiguration {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final ResourceService resourceService;
-
-    private int indexOfReader = 0;
 
     @Bean
     public Job sampleJob() {
@@ -53,6 +52,7 @@ public class SampleJobConfiguration {
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
+                .taskExecutor(new SimpleAsyncTaskExecutor())
                 .build();
     }
 
